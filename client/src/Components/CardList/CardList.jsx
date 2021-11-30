@@ -4,7 +4,7 @@ import gubers from '../../data';
 import Card from '../Card/Card';
 
 export default function CardList() {
-  const { makeField, gameState, setGame } = useGameContext();
+  const { makeField, gameState, setGame, info } = useGameContext();
   const guberList = makeField(gubers)
   
   useEffect(() => {
@@ -18,7 +18,7 @@ export default function CardList() {
 
   return (
 
-    <div className="game">
+    <div className={info.active? "game hidden" : "game"}>
       {gameState.map(item => <Card key={item.id} id={item.id} guber={item} />)}
     </div>
 

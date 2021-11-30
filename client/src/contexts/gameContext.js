@@ -1,18 +1,13 @@
-import { createContext, useContext, useRef, useState } from 'react';
-import Card from '../Components/Card/Card';
-
-
+import { createContext, useContext, useState } from 'react';
 
 const GameContext = createContext();
 
-
-
 function GameContextProvider({ children }) {
-
+  const [info, setInfo] = useState({active: false,
+  guber: null})
   const [game, setGame] = useState({
     count: 0,
     gameState: [],
-    opened: null,
     finished: false
   });
   const gameState = game.gameState;
@@ -27,11 +22,12 @@ function GameContextProvider({ children }) {
     const doubleGubers = JSON.parse(JSON.stringify(gubers));
     doubleGubers.forEach(item => item.id = item.id * 20);
     const allGubers = gubers.concat(doubleGubers);
-    shuffle(allGubers)
+    shuffle(allGubers);
     return allGubers
   }
 
   function play(currentCard, id, guber) {
+    console.log(info)
     setGame(prev => {
       return {
         ...prev,
@@ -44,52 +40,57 @@ function GameContextProvider({ children }) {
         }),
       }
     });
-    setTimeout(() => {
-      if (!game.opened) {
-        setGame(prev => {
+
+    if (!info.guber) {
+      setInfo({active: false,
+          guber: {id: id, name: guber.name}})
+      } else {
+      if (info.guber.name === currentCard.name) {
+        if (gameState.filter(item => !item.status).length === 2) {
+          setTimeout(() => setGame(prev => {
+            return { ...prev, finished: true }
+          }), 1200)
+        }
+        setTimeout(() => setGame(prev => {
           return {
             ...prev,
-            opened: { id: id, name: guber.name }
+            gameState: prev.gameState.map((item) => {
+              if (item.id === info.guber.id || item.id === currentCard.id) {
+                return { ...item, status: true }
+              } else {
+                return item
+              }
+            }),
+            count: prev.count + 1
           }
-        })
-      } else {
-        if (game.opened.name === currentCard.name) {
-          setGame(prev => {
-            return {
-              ...prev,
-              gameState: prev.gameState.map((item) => {
-                if (item.id === game.opened.id || item.id === currentCard.id) {
-                  return { ...item, status: true }
-                } else {
-                  return item
-                }
-              }),
-              opened: null,
-              count: prev.count + 1
-            }
+        }), 900)
+        setTimeout(()=> {
+          setInfo(prev=>{
+            return {...prev, active: true}
           });
-        } else {
-          setGame(prev => {
-            return {
-              ...prev,
-              gameState: prev.gameState.map((item) => {
-                if (item.id === game.opened.id || item.id === currentCard.id) {
-                  return { ...item, opened: false }
-                } else {
-                  return item
-                }
-              }),
-              opened: null,
-              count: prev.count + 1
-            }
-          })
-        }
+        },
+         1100);
+      } else {
+        setTimeout(() => {setGame(prev => {
+          return {
+            ...prev,
+            gameState: prev.gameState.map((item) => {
+              if (item.id === info.guber.id || item.id === currentCard.id) {
+                return { ...item, opened: false }
+              } else {
+                return item
+              }
+            }),
+            count: prev.count + 1
+          }
+        });
+      setInfo({active: false, guber: null})}, 1500);
       }
-    }, 500);
+    }
   }
 
   return (
-    <GameContext.Provider value={{ makeField, game, gameState, setGame, play }}>
+    <GameContext.Provider value={{ makeField, game, gameState, setGame, play, info, setInfo }}>
       {children}
     </GameContext.Provider>
   );

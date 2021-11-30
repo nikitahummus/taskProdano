@@ -2,15 +2,12 @@ import { useGameContext } from '../../contexts/gameContext'
 
 
 export default function Card({ guber, id }) {
-  const { game, play, setGame } = useGameContext();
+  const { game, play} = useGameContext();
   const currentCard = game.gameState.find(item => item.id === id);
   return (
     <div id={id} className={currentCard.status ? "card guessed" : (currentCard.opened ? "card flip" : "card")}
       onClick={() => {
-        play(currentCard, id, guber)
-      }
-
-      }>
+        play(currentCard, id, guber)}}>
       <div className="front-face">
         <img src={`Archive/small/${guber.img}`} alt="" />
 
